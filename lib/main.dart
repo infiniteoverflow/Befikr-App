@@ -1,4 +1,5 @@
 import 'package:befikr_app/homePage.dart';
+import 'package:befikr_app/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'Widgets/SocialIcons.dart';
@@ -351,7 +352,9 @@ class _MyAppState extends State<MyApp> {
                         style: TextStyle(fontFamily: "Poppins-Medium"),
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=> SignUpPage()));
+                        },
                         child: Text("SignUp",
                             style: TextStyle(
                                 color: Color(0xFF5d74e3),

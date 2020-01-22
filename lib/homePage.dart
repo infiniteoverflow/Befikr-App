@@ -1,7 +1,10 @@
+import 'package:befikr_app/account.dart';
 import 'package:befikr_app/maps.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:location/location.dart';
 
 class HomePage extends StatefulWidget
 {
@@ -20,16 +23,43 @@ class HomePageState extends State<HomePage>
   HomePageState(user) {
     this.user = user;
   }
-  final List<List<double>> charts =
-  [
-    [0.0, 0.3, 0.7, 0.6, 0.55, 0.8, 1.2, 1.3, 1.35, 0.9, 1.5, 1.7, 1.8, 1.7, 1.2, 0.8, 1.9, 2.0, 2.2, 1.9, 2.2, 2.1, 2.0, 2.3, 2.4, 2.45, 2.6, 3.6, 2.6, 2.7, 2.9, 2.8, 3.4],
-    [0.0, 0.3, 0.7, 0.6, 0.55, 0.8, 1.2, 1.3, 1.35, 0.9, 1.5, 1.7, 1.8, 1.7, 1.2, 0.8, 1.9, 2.0, 2.2, 1.9, 2.2, 2.1, 2.0, 2.3, 2.4, 2.45, 2.6, 3.6, 2.6, 2.7, 2.9, 2.8, 3.4, 0.0, 0.3, 0.7, 0.6, 0.55, 0.8, 1.2, 1.3, 1.35, 0.9, 1.5, 1.7, 1.8, 1.7, 1.2, 0.8, 1.9, 2.0, 2.2, 1.9, 2.2, 2.1, 2.0, 2.3, 2.4, 2.45, 2.6, 3.6, 2.6, 2.7, 2.9, 2.8, 3.4,],
-    [0.0, 0.3, 0.7, 0.6, 0.55, 0.8, 1.2, 1.3, 1.35, 0.9, 1.5, 1.7, 1.8, 1.7, 1.2, 0.8, 1.9, 2.0, 2.2, 1.9, 2.2, 2.1, 2.0, 2.3, 2.4, 2.45, 2.6, 3.6, 2.6, 2.7, 2.9, 2.8, 3.4, 0.0, 0.3, 0.7, 0.6, 0.55, 0.8, 1.2, 1.3, 1.35, 0.9, 1.5, 1.7, 1.8, 1.7, 1.2, 0.8, 1.9, 2.0, 2.2, 1.9, 2.2, 2.1, 2.0, 2.3, 2.4, 2.45, 2.6, 3.6, 2.6, 2.7, 2.9, 2.8, 3.4, 0.0, 0.3, 0.7, 0.6, 0.55, 0.8, 1.2, 1.3, 1.35, 0.9, 1.5, 1.7, 1.8, 1.7, 1.2, 0.8, 1.9, 2.0, 2.2, 1.9, 2.2, 2.1, 2.0, 2.3, 2.4, 2.45, 2.6, 3.6, 2.6, 2.7, 2.9, 2.8, 3.4]
-  ];
+
+  var location = Location();
+  double lat,long;
+  var db;
+
+  String name;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    db = FirebaseDatabase.instance.reference().child("Users");
+    db.once().then((DataSnapshot snapshot){
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key,values) {
+        name = values['Name'];
+    });
+ });
+    location.onLocationChanged().listen((LocationData currentLocation) {
+    setState(() {
+      lat = currentLocation.latitude;
+      long = currentLocation.longitude;
+
+      FirebaseDatabase.instance.reference().child("Users").child(user.uid)
+                  .child("location").set({
+                    'Latitude':lat,
+                    'Longitude':long
+                  });
+      });
+    });
+    super.initState();
+  }
 
   static final List<String> chartDropdownItems = [ 'Last 7 days', 'Last month', 'Last year' ];
   String actualDropdown = chartDropdownItems[0];
   int actualChart = 0;
+
+
 
   @override
   Widget build(BuildContext context)
@@ -49,6 +79,109 @@ class HomePageState extends State<HomePage>
         mainAxisSpacing: 12.0,
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         children: <Widget>[
+
+          _buildTile(
+            Padding
+            (
+              padding: const EdgeInsets.all(24.0),
+              child: Row
+              (
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>
+                [
+                  Column
+                  (
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>
+                    [
+                      Text(
+                        "Welcome ${name.split(' ')[0]}",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+
+                    ],
+                  ),
+                  Material
+                  (
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(24.0),
+                    child: Center
+                    (
+                      child: Padding
+                      (
+                        padding: const EdgeInsets.all(16.0),
+                        child: Icon(Icons.person_pin_circle, color: Colors.white, size: 35.0),
+                      )
+                    )
+                  )
+                ]
+              ),
+            ),
+            color: Colors.yellow
+          ),
+
+          _buildTile(
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column
+              (
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>
+                [
+                  Material
+                  (
+                    color: Colors.teal,
+                    shape: CircleBorder(),
+                    child: Padding
+                    (
+                      padding: const EdgeInsets.all(10.0),
+                      child: Icon(Icons.location_on, color: Colors.white, size: 30.0),
+                    )
+                  ),
+                  Padding(padding: EdgeInsets.only(bottom: 16.0)),
+                  Text('Start Sharing', style: TextStyle(color: Colors.black45,fontWeight: FontWeight.bold)),
+                  Text('My Location', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 17.0)),
+                ]
+              ),
+            ),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AnimateCamera(lat,long,user))),
+
+          ),
+          _buildTile(
+            Padding
+            (
+              padding: const EdgeInsets.all(24.0),
+              child: Column
+              (
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>
+                [
+                  Material
+                  (
+                    color: Colors.amber,
+                    shape: CircleBorder(),
+                    child: Padding
+                    (
+                      padding: EdgeInsets.all(16.0),
+                      child: Icon(Icons.notifications, color: Colors.white, size: 30.0),
+                    )
+                  ),
+                  Padding(padding: EdgeInsets.only(bottom: 16.0)),
+                  
+                  Text('Send ', style: TextStyle(color: Colors.black45,fontWeight: FontWeight.bold)),
+                  Text('SOS', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 24.0)),
+                ]
+              ),
+            ),
+          ),
+
           _buildTile(
             Padding
             (
@@ -90,83 +223,50 @@ class HomePageState extends State<HomePage>
                 ]
               ),
             ),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=> Account()));
+            }
           ),
-          _buildTile(
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column
-              (
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>
-                [
-                  Material
-                  (
-                    color: Colors.teal,
-                    shape: CircleBorder(),
-                    child: Padding
-                    (
-                      padding: const EdgeInsets.all(10.0),
-                      child: Icon(Icons.location_on, color: Colors.white, size: 30.0),
-                    )
-                  ),
-                  Padding(padding: EdgeInsets.only(bottom: 16.0)),
-                  Text('Start Sharing', style: TextStyle(color: Colors.black45)),
-                  Text('My Location', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 17.0)),
-                ]
-              ),
-            ),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AnimateCamera())),
-
-          ),
-          _buildTile(
-            Padding
-            (
-              padding: const EdgeInsets.all(24.0),
-              child: Column
-              (
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>
-                [
-                  Material
-                  (
-                    color: Colors.amber,
-                    shape: CircleBorder(),
-                    child: Padding
-                    (
-                      padding: EdgeInsets.all(16.0),
-                      child: Icon(Icons.notifications, color: Colors.white, size: 30.0),
-                    )
-                  ),
-                  Padding(padding: EdgeInsets.only(bottom: 16.0)),
-                  Text('Alerts', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 24.0)),
-                  Text('All ', style: TextStyle(color: Colors.black45)),
-                ]
-              ),
-            ),
-          ),
+          
           _buildTile(
             Padding
                 (
                   padding: const EdgeInsets.all(24.0),
-                  child: Column
+                  child: Row
                   (
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>
+                [
+                  Column
+                  (
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>
                     [
-                      Row
-                      (
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>
-                        [
-                          
-                        ],
-                      ),
-                      Padding(padding: EdgeInsets.only(bottom: 4.0)),
+                      Text(
+                        "How to Use BEFIKR",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                        ),
+                        )
                     ],
+                  ),
+                  Material
+                  (
+                    color: Colors.brown,
+                    borderRadius: BorderRadius.circular(24.0),
+                    child: Center
+                    (
+                      child: Padding
+                      (
+                        padding: const EdgeInsets.all(16.0),
+                        child: Icon(Icons.info, color: Colors.white, size: 30.0),
+                      )
+                    )
+                  )
+                ]
                   )
                 ),
           ),
@@ -213,21 +313,23 @@ class HomePageState extends State<HomePage>
           )
         ],
         staggeredTiles: [
-          StaggeredTile.extent(2, 110.0),
-          StaggeredTile.extent(1, 180.0),
-          StaggeredTile.extent(1, 180.0),
-          StaggeredTile.extent(2, 220.0),
-          StaggeredTile.extent(2, 110.0),
+          StaggeredTile.extent(2, 110.0), // For Welcome
+          StaggeredTile.extent(1, 180.0), // For Maps
+          StaggeredTile.extent(1, 180.0), // For SOS
+          StaggeredTile.extent(2, 110.0), // For Account Settings
+          StaggeredTile.extent(2, 110.0), // For blank
+          StaggeredTile.extent(2, 110.0), // For Logout
         ],
       )
     );
   }
 
-  Widget _buildTile(Widget child, {Function() onTap}) {
+  Widget _buildTile(Widget child,{Color color=Colors.white,Function() onTap }) {
     return Material(
       elevation: 14.0,
       borderRadius: BorderRadius.circular(12.0),
       shadowColor: Color(0x802196F3),
+      color:color,
       child: InkWell
       (
         // Do onTap() if it isn't null, otherwise do print()
