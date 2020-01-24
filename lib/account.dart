@@ -1,17 +1,30 @@
+import 'package:befikr_app/profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class Account extends StatefulWidget {
+
+  FirebaseUser user;
+  Account(user) {
+    this.user = user;
+  }
+
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return AccountState();
+    return AccountState(this.user);
   }
   
 }
 
 class AccountState extends State<Account> {
+
+  FirebaseUser user;
+  AccountState(user) {
+    this.user = user;
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -72,8 +85,10 @@ class AccountState extends State<Account> {
                   ]
                 ),
               ),
-            onTap: () {},
-
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(this.user)));
+            },
+              
             ),
 
             _buildTile(

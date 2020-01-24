@@ -28,23 +28,27 @@ class HomePageState extends State<HomePage>
   double lat,long;
   var db;
 
-  String name;
+  String name="-";
 
   @override
   void initState() {
     // TODO: implement initState
-    db = FirebaseDatabase.instance.reference().child("Users");
+    db = FirebaseDatabase.instance.reference().child("Users").child(user.uid);
     db.once().then((DataSnapshot snapshot){
       Map<dynamic, dynamic> values = snapshot.value;
       values.forEach((key,values) {
-        name = values['Name'];
+        if(key == 'Name') {
+          setState(() {
+            name = values;
+          });
+        }
     });
  });
     location.onLocationChanged().listen((LocationData currentLocation) {
     setState(() {
       lat = currentLocation.latitude;
       long = currentLocation.longitude;
-
+      print(user.uid);
       FirebaseDatabase.instance.reference().child("Users").child(user.uid)
                   .child("location").set({
                     'Latitude':lat,
@@ -140,7 +144,7 @@ class HomePageState extends State<HomePage>
                     shape: CircleBorder(),
                     child: Padding
                     (
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Icon(Icons.location_on, color: Colors.white, size: 30.0),
                     )
                   ),
@@ -210,7 +214,7 @@ class HomePageState extends State<HomePage>
                   Material
                   (
                     color: Colors.blue,
-                    borderRadius: BorderRadius.circular(24.0),
+                    shape: CircleBorder(),
                     child: Center
                     (
                       child: Padding
@@ -224,7 +228,7 @@ class HomePageState extends State<HomePage>
               ),
             ),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=> Account()));
+              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=> Account(this.user)));
             }
           ),
           
@@ -256,7 +260,7 @@ class HomePageState extends State<HomePage>
                   Material
                   (
                     color: Colors.brown,
-                    borderRadius: BorderRadius.circular(24.0),
+                    shape: CircleBorder(),
                     child: Center
                     (
                       child: Padding
@@ -299,7 +303,7 @@ class HomePageState extends State<HomePage>
                         color: Colors.red,
                         shape: CircleBorder(),
                         child: Padding(
-                          padding: const EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: Icon(Icons.exit_to_app, color: Colors.white, size: 30.0),
                         )
                       ),

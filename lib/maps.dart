@@ -33,6 +33,55 @@ class AnimateCameraState extends State<AnimateCamera> {
 
   var location = new Location();
 
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  MarkerId selectedMarker;
+  int _markerIdCounter = 1;
+
+  void _onMarkerTapped(MarkerId markerId) {
+    final Marker tappedMarker = markers[markerId];
+    if (tappedMarker != null) {
+      setState(() {
+        if (markers.containsKey(selectedMarker)) {
+          final Marker resetOld = markers[selectedMarker]
+              .copyWith(iconParam: BitmapDescriptor.defaultMarker);
+          markers[selectedMarker] = resetOld;
+        }
+        selectedMarker = markerId;
+        final Marker newMarker = tappedMarker.copyWith(
+          iconParam: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+        );
+        markers[markerId] = newMarker;
+      });
+    }
+  }
+
+  void _add() {
+    final int markerCount = markers.length;
+
+    if (markerCount == 12) {
+      return;
+    }
+
+    final String markerIdVal = 'marker_id_$_markerIdCounter';
+    _markerIdCounter++;
+    final MarkerId markerId = MarkerId(markerIdVal);
+
+    final Marker marker = Marker(
+      markerId: markerId,
+      position: LatLng(
+        lat,
+        long,
+      ),
+      infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
+    );
+
+    setState(() {
+      markers[markerId] = marker;
+    });
+  }
+
   double lat,long;
   FirebaseUser user;
 
@@ -42,7 +91,7 @@ class AnimateCameraState extends State<AnimateCamera> {
     this.user = user;
   }
 
-  Future<bool> _onBackPressed() {
+  Future<bool> Function() _onBackPressed() {
     return showDialog(
           context: context,
           builder: (context) => new AlertDialog(
@@ -74,6 +123,8 @@ class AnimateCameraState extends State<AnimateCamera> {
     setState(() {
       lat = currentLocation.latitude;
       long = currentLocation.longitude;
+
+      _add();
   
       FirebaseDatabase.instance.reference().child("Users")
             .child(user.uid)
@@ -130,6 +181,7 @@ class AnimateCameraState extends State<AnimateCamera> {
                 onMapCreated: _onMapCreated,
                 initialCameraPosition:
                     const CameraPosition(target: LatLng(0.0, 0.0)),
+                markers: Set<Marker>.of(markers.values)
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:befikr_app/homePage.dart';
 import 'package:befikr_app/signup.dart';
+import 'package:befikr_app/swipe.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'Widgets/SocialIcons.dart';
